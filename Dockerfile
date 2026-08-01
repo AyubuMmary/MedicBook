@@ -21,14 +21,14 @@ WORKDIR /var/www
 # Copy existing application directory contents
 COPY . /var/www
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Fix permissions for Laravel folders
+RUN chmod -R 775 storage bootstrap/cache
 
-# Generate config cache
-RUN php artisan config:cache || true
+# Install PHP dependencies WITHOUT running Laravel's artisan scripts yet
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Expose port
 EXPOSE 10000
 
-# Run migrations then start server
-CMD php artisan migrate --force && php artisan serve --host 0.0.0.0 --port 10000
+# At container startup: finish Laravel setup, then run migrations, then start server
+CMD php artisan package:discover --ansi && php artisan config:cache && php artisan migrate --force && php artisan serve --host 0.0.0.0 --port 10000
