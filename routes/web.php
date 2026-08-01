@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\AdminPatientController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\LanguageController;
-
+use App\Http\Controllers\ContactController;
 // Language Switcher
 Route::get('/lang/{lang}', [LanguageController::class, 'switch'])->name('lang.switch');
 
@@ -77,4 +77,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // Payments
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+
+    // routes/web.php
+Route::get('/login', fn () => view('auth.login-register', ['mode' => 'login']))->name('login');
+Route::get('/register', fn () => view('auth.login-register', ['mode' => 'register']))->name('register');
+
+// Add these lines to routes/web.php
+
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 });

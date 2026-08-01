@@ -3,384 +3,402 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('messages.login') }} — MedicBook</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ isset($mode) && $mode === 'register' ? __('messages.register_free') : __('messages.login') }} — MedicBook</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .logo-text {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 2rem;
-            background: linear-gradient(135deg, #ffffff 0%, #bfdbfe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        :root {
+            --ocean-light:  #DFF7FF;
+            --ocean-mid:    #7FCDFF;
+            --ocean-dark:   #4BB8F0;
+            --ocean-deeper: #1A8FCC;
+            --ocean-deepest:#0e6fa3;
         }
-        .logo-book {
-            background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(160deg, #DFF7FF 0%, #B8ECFF 40%, #7FCDFF 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
-        .input-field {
+
+        h1, .display-font { font-family: 'Poppins', sans-serif; }
+
+        /* ---------- Back to home ---------- */
+        .back-home {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--ocean-deepest);
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(127,205,255,0.4);
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            z-index: 50;
+        }
+        .back-home:hover { transform: translateX(-3px); }
+
+        /* ---------- Auth container ---------- */
+        .auth-container {
+            position: relative;
             width: 100%;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 12px 16px 12px 44px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            outline: none;
-            background: #f9fafb;
+            max-width: 900px;
+            min-height: 560px;
+            border-radius: 32px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 30px 60px -15px rgba(26,143,204,0.35);
+            backdrop-filter: blur(10px);
         }
-        .input-field:focus {
-            border-color: #3b82f6;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
+
+        .form-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 3rem 3.25rem;
+            transition: transform 0.7s cubic-bezier(.65,0,.35,1), opacity 0.6s ease;
         }
-        .btn-login {
-            background: linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%);
-            transition: all 0.3s;
-            transform: translateY(0);
+        .form-panel--login { z-index: 2; }
+        .form-panel--register { opacity: 0; z-index: 1; }
+
+        .auth-container.active .form-panel--login {
+            transform: translateX(100%);
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
         }
-        .btn-login:hover {
-            background: linear-gradient(135deg, #1e40af 0%, #4338ca 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(59,130,246,0.4);
+        .auth-container.active .form-panel--register {
+            transform: translateX(100%);
+            opacity: 1;
+            z-index: 5;
+            pointer-events: auto;
         }
-        .left-panel {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 40%, #4f46e5 100%);
+        .form-panel--register { pointer-events: none; }
+        .auth-container.active .form-panel--register { pointer-events: auto; }
+        .form-panel--login { pointer-events: auto; }
+        .auth-container.active .form-panel--login { pointer-events: none; }
+
+        /* ---------- Overlay (the sliding gradient side) ---------- */
+        .overlay-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 0.7s cubic-bezier(.65,0,.35,1);
+            z-index: 100;
+        }
+        .auth-container.active .overlay-container { transform: translateX(-100%); }
+
+        .overlay {
+            position: relative;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(135deg, #1A8FCC 0%, #4BB8F0 45%, #7FCDFF 100%);
+            transform: translateX(0);
+            transition: transform 0.7s cubic-bezier(.65,0,.35,1);
+        }
+        .auth-container.active .overlay { transform: translateX(50%); }
+
+        .overlay-panel {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 2.75rem;
+            color: white;
+            transition: transform 0.7s cubic-bezier(.65,0,.35,1);
+        }
+        .overlay-left { left: 0; transform: translateX(-18%); }
+        .auth-container.active .overlay-left { transform: translateX(0); }
+        .overlay-right { right: 0; transform: translateX(0); }
+        .auth-container.active .overlay-right { transform: translateX(18%); }
+
+        /* Wave-shaped diagonal edge — Ocean Breeze signature */
+        .overlay {
+            clip-path: polygon(12% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 18%);
+        }
+        .auth-container.active .overlay {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 82%, 100% 100%, 0% 100%);
+        }
+
+        /* Floating bubbles for ocean atmosphere */
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            animation: float 7s ease-in-out infinite;
         }
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-18px); }
         }
-        .float-animation { animation: float 4s ease-in-out infinite; }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeInUp 0.6s ease-out forwards; }
-        .fade-in-delay { animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
 
-        .lang-btn {
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            transition: all 0.2s;
-            text-decoration: none;
+        /* ---------- Inputs ---------- */
+        .field {
+            position: relative;
+            margin-bottom: 1rem;
         }
-        .lang-active {
+        .field input {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            border-radius: 14px;
+            border: 1px solid rgba(127,205,255,0.5);
+            background: rgba(223,247,255,0.4);
+            font-size: 0.9rem;
+            color: #0e2a3d;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .field input:focus {
+            outline: none;
+            border-color: var(--ocean-deeper);
+            box-shadow: 0 0 0 3px rgba(75,184,240,0.25);
             background: white;
-            color: #1d4ed8;
         }
-        .lang-inactive {
-            color: #bfdbfe;
+        .field svg {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--ocean-deeper);
         }
-        .lang-inactive:hover {
+        .field-error {
+            color: #e11d48;
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+        }
+
+        .btn-solid {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.95rem;
             color: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-solid:hover { transform: translateY(-2px); }
+
+        .btn-login {
+            background: linear-gradient(135deg, #4BB8F0, #1A8FCC);
+            box-shadow: 0 10px 25px -8px rgba(26,143,204,0.6);
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #059669, #10b981);
+            box-shadow: 0 10px 25px -8px rgba(5,150,105,0.5);
+        }
+
+        .btn-ghost {
+            padding: 0.75rem 2.25rem;
+            border-radius: 999px;
+            border: 1.5px solid rgba(255,255,255,0.8);
+            background: transparent;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+        @media (max-width: 768px) {
+            .auth-container { min-height: 640px; }
+            .form-panel { width: 100%; padding: 2.25rem 1.75rem; }
+            .overlay-container { display: none; }
+            .mobile-toggle { display: flex; }
+            .form-panel--register { display: none; }
+            .auth-container.active .form-panel--login { display: none; transform:none; opacity:0; }
+            .auth-container.active .form-panel--register { display: flex; transform: none; opacity: 1; }
+        }
+        .mobile-toggle { display: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .form-panel, .overlay-container, .overlay, .overlay-panel { transition: none !important; }
         }
     </style>
 </head>
+<body>
 
-<body class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+<a href="{{ route('home') }}" class="back-home">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+    </svg>
+    {{ app()->getLocale() === 'sw' ? 'Rudi Nyumbani' : 'Back to home' }}
+</a>
 
-<div class="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden flex min-h-[600px]">
+<div class="auth-container {{ isset($mode) && $mode === 'register' ? 'active' : '' }}" id="authContainer">
 
-    <!-- ===== LEFT PANEL ===== -->
-    <div class="left-panel hidden md:flex flex-col justify-between w-5/12 p-10 text-white relative overflow-hidden">
-
-        <!-- Background decorations -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-        <div class="absolute top-1/2 right-0 w-32 h-32 bg-yellow-400/10 rounded-full translate-x-16"></div>
-
-        <!-- Logo + Language Switcher Row -->
-        <div class="relative z-10 flex items-start justify-between">
-            <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="24" cy="24" r="23" fill="white" fill-opacity="0.15" stroke="white" stroke-opacity="0.2" stroke-width="1"/>
-                    <circle cx="24" cy="24" r="18" fill="white" fill-opacity="0.15"/>
-                    <rect x="10" y="21" width="28" height="6.5" rx="3.25" fill="white"/>
-                    <rect x="21" y="10" width="6.5" height="28" rx="3.25" fill="white"/>
-                    <circle cx="37" cy="37" r="9" fill="#F59E0B"/>
-                    <path d="M37 41C37 41 32 37.5 32 34.8C32 33 33.3 31.5 35 31.5C35.9 31.5 36.7 31.9 37 32.6C37.3 31.9 38.1 31.5 39 31.5C40.7 31.5 42 33 42 34.8C42 37.5 37 41 37 41Z" fill="white"/>
-                </svg>
-                <div>
-                    <p class="logo-text">Medic<span class="logo-book">Book</span></p>
-                    <p style="font-size:0.6rem;color:#bfdbfe;letter-spacing:2px;text-transform:uppercase;">Healthcare Booking</p>
-                </div>
-            </a>
-
-            <!-- Language Switcher on Left Panel -->
-            <div class="flex items-center gap-1 mt-1">
-                <a href="{{ route('lang.switch', 'en') }}"
-                   class="lang-btn {{ app()->getLocale() === 'en' ? 'lang-active' : 'lang-inactive' }}">
-                    🇬🇧 EN
-                </a>
-                <a href="{{ route('lang.switch', 'sw') }}"
-                   class="lang-btn {{ app()->getLocale() === 'sw' ? 'lang-active' : 'lang-inactive' }}">
-                    🇹🇿 SW
-                </a>
-            </div>
-        </div>
-
-        <!-- Floating illustration -->
-        <div class="relative z-10 flex-1 flex items-center justify-center py-8">
-            <div class="float-animation">
-                <svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="110" cy="110" r="100" fill="white" fill-opacity="0.08"/>
-                    <circle cx="110" cy="110" r="75" fill="white" fill-opacity="0.08"/>
-                    <rect x="80" y="120" width="60" height="70" rx="10" fill="white" fill-opacity="0.9"/>
-                    <circle cx="110" cy="95" r="28" fill="#fde68a"/>
-                    <ellipse cx="110" cy="70" rx="25" ry="12" fill="#1e3a8a"/>
-                    <circle cx="101" cy="93" r="3" fill="#1e3a8a"/>
-                    <circle cx="119" cy="93" r="3" fill="#1e3a8a"/>
-                    <path d="M103 103 Q110 109 117 103" stroke="#1e3a8a" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    <path d="M95 130 Q85 145 90 160 Q95 170 105 168" stroke="#3b82f6" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <circle cx="105" cy="170" r="6" fill="#3b82f6"/>
-                    <rect x="105" y="135" width="10" height="3" rx="1.5" fill="#3b82f6"/>
-                    <rect x="108.5" y="131.5" width="3" height="10" rx="1.5" fill="#3b82f6"/>
-                    <rect x="128" y="125" width="25" height="30" rx="4" fill="white" fill-opacity="0.8"/>
-                    <rect x="132" y="131" width="17" height="2" rx="1" fill="#93c5fd"/>
-                    <rect x="132" y="136" width="17" height="2" rx="1" fill="#93c5fd"/>
-                    <rect x="132" y="141" width="12" height="2" rx="1" fill="#93c5fd"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Bottom text -->
-        <div class="relative z-10">
-            <h2 class="text-2xl font-bold mb-3">{{ __('messages.welcome_back') }}!</h2>
-            <p class="text-blue-200 text-sm leading-relaxed">
-                {{ app()->getLocale() === 'sw'
-                    ? 'Ingia kufikia miadi yako, simamia vitabu na kuungana na madaktari bora.'
-                    : 'Login to access your appointments, manage bookings and connect with top specialist doctors.' }}
+    <!-- ============ SIGN IN FORM ============ -->
+    <div class="form-panel form-panel--login">
+        <div class="w-full">
+            <p class="text-xs font-bold tracking-widest uppercase mb-1" style="color:var(--ocean-dark);">
+                {{ app()->getLocale() === 'sw' ? 'Karibu Tena' : 'Welcome back' }}
+            </p>
+            <h1 class="text-3xl font-extrabold mb-1" style="color:var(--ocean-deepest);">
+                {{ __('messages.login') }}
+            </h1>
+            <p class="text-sm text-gray-500 mb-6">
+                {{ app()->getLocale() === 'sw' ? 'Ingia ili kuendelea na miadi yako.' : 'Sign in to continue booking your appointments.' }}
             </p>
 
-            <!-- Features -->
-            <div class="mt-6 space-y-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-sm">✅</div>
-                    <p class="text-blue-100 text-sm">{{ __('messages.instant_booking') }}</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-sm">🔒</div>
-                    <p class="text-blue-100 text-sm">{{ __('messages.secure_payments') }}</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center text-sm">💳</div>
-                    <p class="text-blue-100 text-sm">{{ __('messages.pay_securely') }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== RIGHT PANEL - LOGIN FORM ===== -->
-    <div class="flex-1 flex items-center justify-center p-8 md:p-12">
-        <div class="w-full max-w-md">
-
-            <!-- Header -->
-            <div class="fade-in mb-8">
-                <!-- Mobile Logo + Language Switcher -->
-                <div class="flex md:hidden items-center justify-between mb-6">
-                    <div class="flex items-center gap-2">
-                        <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-                            <circle cx="24" cy="24" r="23" fill="#1d4ed8" fill-opacity="0.15"/>
-                            <rect x="10" y="21" width="28" height="6.5" rx="3.25" fill="#1d4ed8"/>
-                            <rect x="21" y="10" width="6.5" height="28" rx="3.25" fill="#1d4ed8"/>
-                            <circle cx="37" cy="37" r="9" fill="#F59E0B"/>
-                        </svg>
-                        <span style="font-family:'Poppins',sans-serif;font-weight:800;font-size:1.4rem;color:#1d4ed8;">
-                            Medic<span style="color:#f59e0b;">Book</span>
-                        </span>
-                    </div>
-                    <!-- Mobile Language Switcher -->
-                    <div class="flex items-center gap-1">
-                        <a href="{{ route('lang.switch', 'en') }}"
-                           class="px-2 py-1 rounded-lg text-xs font-bold transition {{ app()->getLocale() === 'en' ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600' }}">
-                            🇬🇧 EN
-                        </a>
-                        <a href="{{ route('lang.switch', 'sw') }}"
-                           class="px-2 py-1 rounded-lg text-xs font-bold transition {{ app()->getLocale() === 'sw' ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600' }}">
-                            🇹🇿 SW
-                        </a>
-                    </div>
-                </div>
-
-                <h1 class="text-3xl font-bold text-gray-900" style="font-family:'Poppins',sans-serif;">
-                    {{ __('messages.sign_in') }}
-                </h1>
-                <p class="text-gray-500 mt-2">{{ __('messages.welcome_back_msg') }}</p>
-            </div>
-
-            <!-- Error Messages -->
-            @if($errors->any())
-            <div class="fade-in bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-start gap-3">
-                <span class="text-lg mt-0.5">⚠️</span>
-                <div>
-                    @foreach($errors->all() as $error)
-                        <p class="text-sm">{{ $error }}</p>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            @if(session('status'))
-            <div class="fade-in bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
-                <span>✅</span>
-                <p class="text-sm">{{ session('status') }}</p>
-            </div>
-            @endif
-
-            @if(session('success'))
-            <div class="fade-in bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
-                <span>✅</span>
-                <p class="text-sm">{{ session('success') }}</p>
-            </div>
-            @endif
-
-            <!-- LOGIN FORM -->
-            <form method="POST" action="{{ route('login') }}" class="fade-in-delay space-y-5">
+            <form method="POST" action="{{ route('login') }}">
                 @csrf
-
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                        {{ __('messages.email_address') }}
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
-                            </svg>
-                        </span>
-                        <input type="email"
-                               name="email"
-                               value="{{ old('email') }}"
-                               class="input-field @error('email') border-red-400 @enderror"
-                               placeholder="you@example.com"
-                               required
-                               autofocus
-                               autocomplete="email">
-                    </div>
-                    @error('email')
-                        <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                            <span>⚠️</span> {{ $message }}
-                        </p>
-                    @enderror
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                    </svg>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="{{ app()->getLocale() === 'sw' ? 'Barua pepe' : 'Email address' }}" required autofocus>
+                    @error('email', 'login') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                    <input type="password" name="password" placeholder="{{ app()->getLocale() === 'sw' ? 'Nenosiri' : 'Password' }}" required>
+                    @error('password', 'login') <p class="field-error">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Password -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                        {{ __('messages.password') }}
-                    </label>
-                    <div class="relative">
-                        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                        </span>
-                        <input type="password"
-                               name="password"
-                               id="password"
-                               class="input-field @error('password') border-red-400 @enderror"
-                               placeholder="{{ app()->getLocale() === 'sw' ? 'Ingiza nywila yako' : 'Enter your password' }}"
-                               required
-                               autocomplete="current-password">
-                        <button type="button"
-                                onclick="togglePassword()"
-                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
-                            <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    @error('password')
-                        <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                            <span>⚠️</span> {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <!-- Remember me & Forgot password -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox"
-                               name="remember"
-                               class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-                        <span class="text-sm text-gray-600">{{ __('messages.remember_me') }}</span>
+                <div class="flex items-center justify-between mb-6 text-sm">
+                    <label class="flex items-center gap-2 text-gray-500">
+                        <input type="checkbox" name="remember" class="rounded border-gray-300">
+                        {{ app()->getLocale() === 'sw' ? 'Nikumbuke' : 'Remember me' }}
                     </label>
                     @if(Route::has('password.request'))
-                        <a href="{{ route('password.request') }}"
-                           class="text-sm text-blue-600 hover:text-blue-800 font-medium transition">
-                            {{ __('messages.forgot_password') }}
+                        <a href="{{ route('password.request') }}" class="font-semibold" style="color:var(--ocean-deeper);">
+                            {{ app()->getLocale() === 'sw' ? 'Umesahau nenosiri?' : 'Forgot password?' }}
                         </a>
                     @endif
                 </div>
 
-                <!-- Login Button -->
-                <button type="submit"
-                        class="btn-login w-full text-white py-3.5 rounded-xl font-bold text-base tracking-wide shadow-lg">
-                    {{ __('messages.sign_in_btn') }}
-                </button>
-
-                <!-- Divider -->
-                <div class="relative flex items-center gap-4 my-2">
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                    <span class="text-gray-400 text-sm">{{ app()->getLocale() === 'sw' ? 'au' : 'or' }}</span>
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                </div>
-
-                <!-- Register Link -->
-                <div class="text-center">
-                    <p class="text-gray-600 text-sm">
-                        {{ __('messages.no_account') }}
-                        <a href="{{ route('register') }}"
-                           class="text-blue-600 font-bold hover:text-blue-800 transition ml-1">
-                            {{ __('messages.create_free') }}
-                        </a>
-                    </p>
-                </div>
-
-                <!-- Back to home -->
-                <div class="text-center">
-                    <a href="{{ route('home') }}"
-                       class="text-gray-400 hover:text-gray-600 text-sm transition flex items-center justify-center gap-1">
-                        ← {{ app()->getLocale() === 'sw' ? 'Rudi Nyumbani' : 'Back to Home' }}
-                    </a>
-                </div>
+                <button type="submit" class="btn-solid btn-login">{{ __('messages.login') }}</button>
             </form>
 
+            <button type="button" class="mobile-toggle w-full items-center justify-center gap-1 mt-6 text-sm font-semibold" style="color:var(--ocean-deeper);" onclick="setActive(true)">
+                {{ app()->getLocale() === 'sw' ? 'Huna akaunti? Jisajili' : "Don't have an account? Sign up" }}
+            </button>
         </div>
     </div>
+
+    <!-- ============ SIGN UP FORM ============ -->
+    <div class="form-panel form-panel--register">
+        <div class="w-full">
+            <p class="text-xs font-bold tracking-widest uppercase mb-1" style="color:#10b981;">
+                {{ app()->getLocale() === 'sw' ? 'Mgeni Hapa' : 'New around here' }}
+            </p>
+            <h1 class="text-3xl font-extrabold mb-1" style="color:var(--ocean-deepest);">
+                {{ __('messages.register_free') }}
+            </h1>
+            <p class="text-sm text-gray-500 mb-6">
+                {{ app()->getLocale() === 'sw' ? 'Fungua akaunti na uanze kuweka miadi leo.' : 'Create your account and start booking in minutes.' }}
+            </p>
+
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="{{ app()->getLocale() === 'sw' ? 'Jina kamili' : 'Full name' }}" required>
+                    @error('name', 'register') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                    </svg>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="{{ app()->getLocale() === 'sw' ? 'Barua pepe' : 'Email address' }}" required>
+                    @error('email', 'register') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
+                    <input type="password" name="password" placeholder="{{ app()->getLocale() === 'sw' ? 'Nenosiri' : 'Password' }}" required>
+                    @error('password', 'register') <p class="field-error">{{ $message }}</p> @enderror
+                </div>
+                <div class="field">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                    <input type="password" name="password_confirmation" placeholder="{{ app()->getLocale() === 'sw' ? 'Thibitisha Nenosiri' : 'Confirm password' }}" required>
+                </div>
+
+                <button type="submit" class="btn-solid btn-register mt-2">{{ __('messages.register_free') }}</button>
+            </form>
+
+            <button type="button" class="mobile-toggle w-full items-center justify-center gap-1 mt-6 text-sm font-semibold" style="color:#10b981;" onclick="setActive(false)">
+                {{ app()->getLocale() === 'sw' ? 'Una akaunti tayari? Ingia' : 'Already have an account? Sign in' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- ============ SLIDING OVERLAY ============ -->
+    <div class="overlay-container">
+        <div class="overlay">
+            <div class="bubble" style="width:70px; height:70px; top:14%; left:18%; animation-delay:.2s;"></div>
+            <div class="bubble" style="width:36px; height:36px; top:60%; left:70%; animation-delay:1.3s;"></div>
+            <div class="bubble" style="width:22px; height:22px; top:80%; left:30%; animation-delay:.7s;"></div>
+
+            <div class="overlay-panel overlay-left">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-10 h-10 mb-4 opacity-90">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0-9-9c0 3.6 2 6.75 5 8.4M12 21c1.5-1.5 3-4 3-8a3 3 0 0 0-6 0c0 4 1.5 6.5 3 8Zm0 0V3" />
+                </svg>
+                <h1 class="text-2xl font-extrabold mb-3">
+                    {{ app()->getLocale() === 'sw' ? 'Karibu Tena!' : 'Welcome Back!' }}
+                </h1>
+                <p class="text-sm mb-7" style="color:#DFF7FF;">
+                    {{ app()->getLocale() === 'sw' ? 'Ingia kwa taarifa zako ili kuendelea na safari yako ya afya.' : 'Sign in with your details to pick up right where your care journey left off.' }}
+                </p>
+                <button type="button" class="btn-ghost" onclick="setActive(false)">{{ __('messages.login') }}</button>
+            </div>
+
+            <div class="overlay-panel overlay-right">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-10 h-10 mb-4 opacity-90">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                </svg>
+                <h1 class="text-2xl font-extrabold mb-3">
+                    {{ app()->getLocale() === 'sw' ? 'Mgeni Hapa?' : 'New Around Here?' }}
+                </h1>
+                <p class="text-sm mb-7" style="color:#DFF7FF;">
+                    {{ app()->getLocale() === 'sw' ? 'Fungua akaunti na upate nafasi kamili ya kuweka miadi na madaktari.' : 'Create an account and unlock full access to booking with our doctors.' }}
+                </p>
+                <button type="button" class="btn-ghost" onclick="setActive(true)">{{ __('messages.register_free') }}</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-function togglePassword() {
-    const input = document.getElementById('password');
-    const icon  = document.getElementById('eye-icon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
-        `;
-    } else {
-        input.type = 'password';
-        icon.innerHTML = `
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-        `;
+    const authContainer = document.getElementById('authContainer');
+    function setActive(isRegister) {
+        authContainer.classList.toggle('active', isRegister);
     }
-}
 </script>
 
 </body>

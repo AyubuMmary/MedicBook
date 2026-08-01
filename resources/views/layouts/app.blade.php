@@ -16,56 +16,125 @@
     <script src="https://js.stripe.com/v3/"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        :root {
+            --mnh-navy:    #0a2a5e;
+            --mnh-navy-2:  #0e3a7a;
+            --ocean-light: #DFF7FF;
+            --ocean-mid:   #7FCDFF;
+            --ocean-dark:  #4BB8F0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(160deg, #F5F9FF 0%, #E8F1FB 100%);
+            min-height: 100vh;
+        }
+
         html { scroll-behavior: smooth; }
 
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #E8F1FB; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
 
+        /* ===== MUHIMBILI-STYLE HEADER ===== */
         .navbar-glass {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background-image:
+                linear-gradient(rgba(255,255,255,0.90), rgba(255,255,255,0.94)),
+                url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .logo-medic {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, #ffffff 0%, #bfdbfe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
+
+        /* Logo sizing — both crest & MedicBook logo share the same footprint */
+        .header-logo {
+            height: 6.5rem;      /* enlarged for stronger visual presence */
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
         }
-        .logo-book {
-            background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        @media (max-width: 640px) {
+            .header-logo { height: 4rem; }
         }
-        .logo-tagline {
+
+        .mnh-subtitle {
             font-family: 'Inter', sans-serif;
-            font-size: 0.6rem;
-            color: #bfdbfe;
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
+            font-size: 0.95rem;
+            color: #475569;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .mnh-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            line-height: 1.15;
+            background: linear-gradient(90deg, #0e7490 0%, #22c1dc 35%, #4bb8f0 65%, #7fcdff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .mnh-tagline {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #64748b;
             font-weight: 500;
         }
-        .nav-link {
-            position: relative;
-            transition: color 0.2s;
+
+        .mnh-underline {
+            width: 70px;
+            height: 3px;
+            margin: 6px auto 0;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #0e7490, #7fcdff);
         }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #fbbf24;
-            transition: width 0.3s;
+
+        @media (max-width: 640px) {
+            .mnh-title    { font-size: 1.15rem; }
+            .mnh-subtitle { font-size: 0.78rem; }
+            .mnh-tagline  { font-size: 0.75rem; }
         }
-        .nav-link:hover::after { width: 100%; }
+
+        /* Dark nav links (secondary row) */
+        .nav-link-dark {
+            font-family: 'Poppins', sans-serif;
+            color: #0e7490;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 6px 10px;
+            border-radius: 999px;
+            transition: all 0.2s;
+        }
+        .nav-link-dark:hover {
+            color: #075985;
+            background: #e0f7fb;
+        }
+
+        /* CTA-style Register Free button */
+        .nav-cta {
+            font-family: 'Poppins', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--mnh-navy);
+            border: 1.5px solid var(--mnh-navy);
+            padding: 5px 14px;
+            border-radius: 999px;
+            transition: all 0.2s;
+        }
+        .nav-cta:hover {
+            background: var(--mnh-navy);
+            color: #fff;
+        }
 
         .lang-btn {
+            font-family: 'Poppins', sans-serif;
             padding: 4px 10px;
             border-radius: 8px;
             font-size: 0.75rem;
@@ -76,301 +145,191 @@
             align-items: center;
             gap: 3px;
         }
-        .lang-active {
-            background: white;
-            color: #1d4ed8;
+        .lang-active-dark   { background: var(--mnh-navy); color: #fff; }
+        .lang-inactive-dark { color: #475569; }
+        .lang-inactive-dark:hover { background: #f1f5f9; color: var(--mnh-navy); }
+
+        /* Cards / sections */
+        .ocean-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 16px rgba(15, 42, 94, 0.06);
+            transition: all 0.3s ease;
+            border-radius: 12px;
         }
-        .lang-inactive {
-            color: #bfdbfe;
-        }
-        .lang-inactive:hover {
-            color: white;
-            background: rgba(255,255,255,0.1);
+        .ocean-card:hover {
+            box-shadow: 0 8px 24px rgba(15, 42, 94, 0.1);
+            transform: translateY(-2px);
         }
 
-        .alert-fade {
-            animation: fadeIn 0.4s ease-in-out;
+        .glass-section {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e5e7eb;
         }
+
+        .alert-fade { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        /* Footer */
+        .ocean-footer {
+            background: linear-gradient(135deg, #0a2a5e 0%, #0e3a7a 60%, #1a56a0 100%);
+        }
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="flex flex-col min-h-screen">
 
 <!-- ==================== NAVBAR ==================== -->
-<nav class="bg-gradient-to-r from-blue-800 via-blue-700 to-indigo-700 text-white shadow-lg sticky top-0 z-50 navbar-glass">
-    <div class="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+<nav class="navbar-glass sticky top-0 z-50">
 
-        <!-- LOGO -->
-        <a href="{{ auth()->check() && auth()->user()->isPatient() ? route('patient.dashboard') : route('home') }}"
-           class="flex items-center gap-3 group">
-            <div class="relative flex-shrink-0">
-                <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                    <circle cx="24" cy="24" r="23" fill="white" fill-opacity="0.1"
-                            stroke="white" stroke-opacity="0.2" stroke-width="1"/>
-                    <circle cx="24" cy="24" r="18" fill="white" fill-opacity="0.15"/>
-                    <rect x="10" y="21" width="28" height="6.5" rx="3.25" fill="white"/>
-                    <rect x="21" y="10" width="6.5" height="28" rx="3.25" fill="white"/>
-                    <circle cx="37" cy="37" r="9" fill="#F59E0B"/>
-                    <circle cx="37" cy="37" r="7.5" fill="#FBBF24"/>
-                    <path d="M37 41C37 41 32 37.5 32 34.8C32 33 33.3 31.5 35 31.5C35.9 31.5 36.7 31.9 37 32.6C37.3 31.9 38.1 31.5 39 31.5C40.7 31.5 42 33 42 34.8C42 37.5 37 41 37 41Z"
-                          fill="white"/>
-                </svg>
-            </div>
-            <div class="flex flex-col leading-none">
-                <span class="logo-medic">Medic<span class="logo-book">Book</span></span>
-                <span class="logo-tagline">Healthcare Booking</span>
-            </div>
-        </a>
+    {{-- Top row: Coat of Arms | Title | MedicBook Logo --}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4">
 
-        <!-- DESKTOP NAV LINKS -->
-        <div class="hidden md:flex items-center gap-6">
+        {{-- LEFT LOGO --}}
+        <div class="flex items-center shrink-0">
+            <img src="{{ asset('images/coat-of-arms.png') }}"
+                 alt="Coat of Arms"
+                 class="header-logo">
+        </div>
+
+        {{-- CENTER TITLE --}}
+        <div class="flex-1 text-center px-2">
+            <p class="mnh-subtitle">
+                {{ app()->getLocale() == 'sw'
+                    ? 'Jamhuri ya Muungano wa Tanzania'
+                    : 'The United Republic of Tanzania' }}
+            </p>
+
+            <h1 class="mnh-title uppercase">
+                MedicBook Healthcare Booking System
+            </h1>
+
+            <div class="mnh-underline"></div>
+
+            <p class="mnh-tagline mt-1">
+                {{ app()->getLocale() == 'sw'
+                    ? 'Huduma Bora kwa Wananchi'
+                    : 'Quality Healthcare Services' }}
+            </p>
+        </div>
+
+        {{-- RIGHT LOGO --}}
+        <div class="flex items-center shrink-0">
+            <img src="{{ asset('images/medicbook-logo.png') }}"
+                 alt="MedicBook"
+                 class="header-logo">
+        </div>
+    </div>
+
+    {{-- Bottom row: nav links + language --}}
+    <div class="border-t border-gray-200 bg-white/70">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-end gap-1 sm:gap-2">
 
             @auth
                 @if(auth()->user()->isAdmin())
-                    <!-- ===== ADMIN LINKS ===== -->
-                    <a href="{{ route('home') }}"
-                       class="nav-link text-blue-100 hover:text-white font-medium transition flex items-center gap-1.5 text-sm">
-                            {{ __('messages.home') }}
-                    </a>
-                    <a href="{{ route('doctors.index') }}"
-                       class="nav-link text-blue-100 hover:text-white font-medium transition flex items-center gap-1.5 text-sm">
-                           {{ __('messages.doctors') }}
-                    </a>
+                    <a href="{{ route('home') }}" class="nav-link-dark">{{ __('messages.home') }}</a>
+                    <a href="{{ route('doctors.index') }}" class="nav-link-dark">{{ __('messages.doctors') }}</a>
                     <a href="{{ route('admin.dashboard') }}"
-                       class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold hover:bg-yellow-300 transition flex items-center gap-1.5 text-sm shadow">
-                           {{ __('messages.admin_panel') }}
+                       class="bg-[#0a2a5e] text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-[#0e3a7a] transition">
+                        {{ __('messages.admin_panel') }}
                     </a>
-
                 @elseif(auth()->user()->isPatient())
-                    <!-- ===== PATIENT LINKS - Dashboard Only ===== -->
-                    <a href="{{ route('patient.dashboard') }}"
-                       class="nav-link text-blue-100 hover:text-white font-medium transition flex items-center gap-1.5 text-sm">
-                         {{ __('messages.dashboard') }}
-                    </a>
-
+                    <a href="{{ route('patient.dashboard') }}" class="nav-link-dark">{{ __('messages.dashboard') }}</a>
                 @else
-                    <!-- ===== DOCTOR LINKS ===== -->
-                    <a href="{{ route('home') }}"
-                       class="nav-link text-blue-100 hover:text-white font-medium transition flex items-center gap-1.5 text-sm">
-                         {{ __('messages.home') }}
-                    </a>
+                    <a href="{{ route('home') }}" class="nav-link-dark">{{ __('messages.home') }}</a>
                 @endif
 
-                <!-- USER AVATAR & LOGOUT -->
-                <div class="flex items-center gap-3 border-l border-blue-500 pl-5">
-                    <div class="w-9 h-9 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center font-bold text-gray-900 text-sm shadow">
+                <div class="flex items-center gap-2 border-l border-gray-300 pl-4">
+                    <div class="w-8 h-8 rounded-full bg-[#0a2a5e] text-white flex items-center justify-center text-sm font-bold">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <div class="hidden lg:block">
-                        <p class="text-sm font-semibold leading-none text-white">
-                            {{ auth()->user()->name }}
-                        </p>
-                        <p class="text-xs text-blue-200 capitalize mt-0.5">
-                            {{ auth()->user()->role }}
-                        </p>
+                    <div class="hidden sm:block leading-tight">
+                        <div class="text-sm font-semibold text-slate-800">{{ auth()->user()->name }}</div>
+                        <div class="text-xs text-slate-500">{{ auth()->user()->role }}</div>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" class="inline ml-1">
+                    <form method="POST" action="{{ route('logout') }}" class="ml-2">
                         @csrf
                         <button type="submit"
-                                class="text-xs text-blue-200 hover:text-white border border-blue-400 hover:border-white px-3 py-1.5 rounded-full transition">
+                                class="text-xs text-slate-600 hover:text-white border border-slate-300 hover:bg-[#0a2a5e] hover:border-[#0a2a5e] px-3 py-1.5 rounded-full transition">
                             {{ __('messages.logout') }}
                         </button>
                     </form>
                 </div>
-
             @else
-                <!-- ===== GUEST LINKS - Home, Login, Register Only ===== -->
-                <a href="{{ route('home') }}"
-                   class="nav-link text-blue-100 hover:text-white font-medium transition text-sm">
-                     {{ __('messages.home') }}
-                </a>
-                <a href="{{ route('login') }}"
-                   class="nav-link text-blue-100 hover:text-white font-medium transition text-sm">
-                    {{ __('messages.login') }}
-                </a>
-                <a href="{{ route('register') }}"
-                   class="bg-yellow-400 text-gray-900 px-5 py-2.5 rounded-full font-bold hover:bg-yellow-300 transition shadow text-sm">
+                <a href="{{ route('home') }}"     class="nav-link-dark">{{ __('messages.home') }}</a>
+                <a href="{{ route('login') }}"    class="nav-link-dark">{{ __('messages.login') }}</a>
+                <a href="{{ route('register') }}" class="nav-link-dark">
                     {{ __('messages.register_free') }}
                 </a>
             @endauth
 
-            <!-- LANGUAGE SWITCHER - Always Visible -->
-            <div class="flex items-center gap-1 border-l border-blue-500 pl-5">
-                <a href="{{ route('lang.switch', 'en') }}"
-                   class="lang-btn {{ app()->getLocale() === 'english' ? 'lang-active' : 'lang-inactive' }}">
+            {{-- Contact --}}
+            @if(Route::has('contact'))
+                <a href="{{ route('contact') }}" class="nav-link-dark">{{ __('messages.contact') }}</a>
+            @else
+                <a href="{{ url('/contact') }}" class="nav-link-dark">{{ __('messages.contact') }}</a>
+            @endif
+
+            {{-- Language switcher --}}
+            <div class="flex items-center gap-1 border-l border-gray-300 pl-4">
+                <a href="{{ url('lang/en') }}"
+                   class="lang-btn {{ app()->getLocale()==='en' ? 'lang-active-dark' : 'lang-inactive-dark' }}">
                     🇬🇧 EN
                 </a>
-                <a href="{{ route('lang.switch', 'sw') }}"
-                   class="lang-btn {{ app()->getLocale() === 'swahili' ? 'lang-active' : 'lang-inactive' }}">
-                    🇹🇿 SWAHILI
+                <a href="{{ url('lang/sw') }}"
+                   class="lang-btn {{ app()->getLocale()==='sw' ? 'lang-active-dark' : 'lang-inactive-dark' }}">
+                    🇹🇿 SW
                 </a>
             </div>
-
-        </div>
-
-        <!-- MOBILE MENU BUTTON -->
-        <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
-                class="md:hidden text-white focus:outline-none p-1">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-        </button>
-    </div>
-
-    <!-- MOBILE MENU -->
-    <div id="mobile-menu" class="hidden md:hidden bg-blue-900 border-t border-blue-600">
-        <div class="px-6 py-4 space-y-1">
-
-            @auth
-                @if(auth()->user()->isAdmin())
-                    <!-- Admin Mobile Links -->
-                    <a href="{{ route('home') }}"
-                       class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                        🏠 {{ __('messages.home') }}
-                    </a>
-                    <a href="{{ route('doctors.index') }}"
-                       class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                        👨‍⚕️ {{ __('messages.doctors') }}
-                    </a>
-                    <a href="{{ route('admin.dashboard') }}"
-                       class="flex items-center gap-2 text-yellow-400 font-bold py-3 border-b border-blue-700 text-sm">
-                        ⚙️ {{ __('messages.admin_panel') }}
-                    </a>
-
-                @elseif(auth()->user()->isPatient())
-                    <!-- Patient Mobile - Dashboard Only -->
-                    <a href="{{ route('patient.dashboard') }}"
-                       class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                        📋 {{ __('messages.dashboard') }}
-                    </a>
-
-                @else
-                    <!-- Doctor Mobile Links -->
-                    <a href="{{ route('home') }}"
-                       class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                        🏠 {{ __('messages.home') }}
-                    </a>
-                @endif
-
-                <!-- User Info -->
-                <div class="flex items-center gap-3 py-3 border-b border-blue-700">
-                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center font-bold text-gray-900 text-sm">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                    </div>
-                    <div>
-                        <p class="text-white font-semibold text-sm">{{ auth()->user()->name }}</p>
-                        <p class="text-blue-300 text-xs capitalize">{{ auth()->user()->role }}</p>
-                    </div>
-                </div>
-
-                <!-- Logout -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                            class="w-full text-left text-red-300 hover:text-red-200 py-3 font-medium text-sm border-b border-blue-700">
-                        🚪 {{ __('messages.logout') }}
-                    </button>
-                </form>
-
-            @else
-                <!-- ===== GUEST MOBILE - Home, Login, Register Only ===== -->
-                <a href="{{ route('home') }}"
-                   class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                    🏠 {{ __('messages.home') }}
-                </a>
-                <a href="{{ route('login') }}"
-                   class="flex items-center gap-2 text-blue-100 hover:text-white py-3 border-b border-blue-700 text-sm font-medium">
-                    🔐 {{ __('messages.login') }}
-                </a>
-                <a href="{{ route('register') }}"
-                   class="flex items-center gap-2 text-yellow-400 font-bold hover:text-yellow-300 py-3 border-b border-blue-700 text-sm">
-                    ✨ {{ __('messages.register_free') }}
-                </a>
-            @endauth
-
-            <!-- Mobile Language Switcher -->
-            <div class="flex items-center gap-3 py-3">
-                <p class="text-blue-300 text-xs font-semibold uppercase tracking-wider">
-                    {{ app()->getLocale() === 'sw' ? 'Lugha:' : 'Language:' }}
-                </p>
-                <div class="flex gap-2">
-                    <a href="{{ route('lang.switch', 'en') }}"
-                       class="lang-btn {{ app()->getLocale() === 'en' ? 'lang-active' : 'lang-inactive' }}">
-                        🇬🇧 English
-                    </a>
-                    <a href="{{ route('lang.switch', 'sw') }}"
-                       class="lang-btn {{ app()->getLocale() === 'sw' ? 'lang-active' : 'lang-inactive' }}">
-                        🇹🇿 Kiswahili
-                    </a>
-                </div>
-            </div>
-
         </div>
     </div>
 </nav>
 
-<!-- ==================== ALERTS ==================== -->
-<div class="max-w-7xl mx-auto w-full px-4 pt-4">
-
+<!-- ==================== FLASH MESSAGES ==================== -->
+<div class="max-w-7xl mx-auto w-full px-4 pt-4 space-y-3">
     @if(session('success'))
-        <div class="alert-fade bg-green-50 text-green-800 border border-green-200 px-5 py-4 rounded-xl mb-4 flex items-center gap-3 shadow-sm">
-            <span class="text-2xl">✅</span>
-            <span class="font-medium flex-1">{{ session('success') }}</span>
-            <button onclick="this.parentElement.remove()"
-                    class="text-green-400 hover:text-green-600 text-xl font-bold ml-auto">×</button>
+        <div class="alert-fade flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            <span>✅</span><span class="flex-1">{{ session('success') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-green-600 hover:text-green-800">×</button>
         </div>
     @endif
-
     @if(session('info'))
-        <div class="alert-fade bg-blue-50 text-blue-800 border border-blue-200 px-5 py-4 rounded-xl mb-4 flex items-center gap-3 shadow-sm">
-            <span class="text-2xl">ℹ️</span>
-            <span class="font-medium flex-1">{{ session('info') }}</span>
-            <button onclick="this.parentElement.remove()"
-                    class="text-blue-400 hover:text-blue-600 text-xl font-bold ml-auto">×</button>
+        <div class="alert-fade flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
+            <span>ℹ️</span><span class="flex-1">{{ session('info') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-blue-600 hover:text-blue-800">×</button>
         </div>
     @endif
-
     @if(session('error'))
-        <div class="alert-fade bg-red-50 text-red-800 border border-red-200 px-5 py-4 rounded-xl mb-4 flex items-center gap-3 shadow-sm">
-            <span class="text-2xl">❌</span>
-            <span class="font-medium flex-1">{{ session('error') }}</span>
-            <button onclick="this.parentElement.remove()"
-                    class="text-red-400 hover:text-red-600 text-xl font-bold ml-auto">×</button>
+        <div class="alert-fade flex items-center gap-2 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <span>❌</span><span class="flex-1">{{ session('error') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-800">×</button>
         </div>
     @endif
-
     @if(session('warning'))
-        <div class="alert-fade bg-yellow-50 text-yellow-800 border border-yellow-200 px-5 py-4 rounded-xl mb-4 flex items-center gap-3 shadow-sm">
-            <span class="text-2xl">⚠️</span>
-            <span class="font-medium flex-1">{{ session('warning') }}</span>
-            <button onclick="this.parentElement.remove()"
-                    class="text-yellow-400 hover:text-yellow-600 text-xl font-bold ml-auto">×</button>
+        <div class="alert-fade flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+            <span>⚠️</span><span class="flex-1">{{ session('warning') }}</span>
+            <button onclick="this.parentElement.remove()" class="text-yellow-600 hover:text-yellow-800">×</button>
         </div>
     @endif
-
     @if($errors->any())
-        <div class="alert-fade bg-red-50 text-red-800 border border-red-200 px-5 py-4 rounded-xl mb-4 shadow-sm">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-2xl">⚠️</span>
-                <span class="font-bold flex-1">
+        <div class="alert-fade bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            <div class="flex items-center gap-2 font-semibold mb-2">
+                <span>⚠️</span>
+                <span class="flex-1">
                     {{ app()->getLocale() === 'sw' ? 'Tafadhali rekebisha makosa yafuatayo:' : 'Please fix the following errors:' }}
                 </span>
-                <button onclick="this.parentElement.parentElement.remove()"
-                        class="text-red-400 hover:text-red-600 text-xl font-bold">×</button>
             </div>
-            <ul class="list-disc list-inside space-y-1 ml-2">
+            <ul class="list-disc list-inside text-sm space-y-1">
                 @foreach($errors->all() as $error)
-                    <li class="text-sm">{{ $error }}</li>
+                    <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
-
 </div>
 
 <!-- ==================== MAIN CONTENT ==================== -->
@@ -379,140 +338,59 @@
 </main>
 
 <!-- ==================== FOOTER ==================== -->
-<footer class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white mt-16">
-    <div class="max-w-7xl mx-auto px-6 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+<footer class="ocean-footer text-white mt-12">
+    <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
 
-            <!-- Brand -->
-            <div class="md:col-span-2">
-                <div class="flex items-center gap-3 mb-4">
-                    <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="23" fill="white" fill-opacity="0.1"/>
-                        <circle cx="24" cy="24" r="18" fill="white" fill-opacity="0.15"/>
-                        <rect x="10" y="21" width="28" height="6.5" rx="3.25" fill="white"/>
-                        <rect x="21" y="10" width="6.5" height="28" rx="3.25" fill="white"/>
-                        <circle cx="37" cy="37" r="9" fill="#F59E0B"/>
-                        <path d="M37 41C37 41 32 37.5 32 34.8C32 33 33.3 31.5 35 31.5C35.9 31.5 36.7 31.9 37 32.6C37.3 31.9 38.1 31.5 39 31.5C40.7 31.5 42 33 42 34.8C42 37.5 37 41 37 41Z"
-                              fill="white"/>
-                    </svg>
-                    <div>
-                        <p style="font-family:'Poppins',sans-serif;font-weight:800;font-size:1.4rem;background:linear-gradient(135deg,#fff,#bfdbfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-                            Medic<span style="background:linear-gradient(135deg,#fde68a,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Book</span>
-                        </p>
-                        <p style="font-size:0.6rem;color:#93c5fd;letter-spacing:2px;text-transform:uppercase;">
-                            Healthcare Booking
-                        </p>
-                    </div>
-                </div>
-                <p class="text-blue-200 text-sm leading-relaxed max-w-xs">
-                    {{ __('messages.trusted_platform') }}
-                </p>
-
-                <!-- Language Switcher in Footer -->
-                <div class="flex items-center gap-2 mt-5">
-                    <p class="text-blue-300 text-xs font-semibold uppercase tracking-wider">
-                        {{ app()->getLocale() === 'sw' ? 'Lugha:' : 'Language:' }}
-                    </p>
-                    <a href="{{ route('lang.switch', 'en') }}"
-                       class="lang-btn {{ app()->getLocale() === 'en' ? 'lang-active' : 'lang-inactive' }}">
-                        🇬🇧 English
-                    </a>
-                    <a href="{{ route('lang.switch', 'sw') }}"
-                       class="lang-btn {{ app()->getLocale() === 'sw' ? 'lang-active' : 'lang-inactive' }}">
-                        🇹🇿 Kiswahili
-                    </a>
-                </div>
-            </div>
-
-            <!-- Quick Links -->
-            <div>
-                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider">
-                    {{ __('messages.quick_links') }}
-                </h4>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="{{ route('home') }}"
-                           class="text-blue-300 hover:text-white text-sm transition">
-                            🏠 {{ __('messages.home') }}
-                        </a>
-                    </li>
-                    @auth
-                        @if(auth()->user()->isPatient())
-                            <li>
-                                <a href="{{ route('patient.dashboard') }}"
-                                   class="text-blue-300 hover:text-white text-sm transition">
-                                    📋 {{ __('messages.dashboard') }}
-                                </a>
-                            </li>
-                        @endif
-                        @if(auth()->user()->isAdmin())
-                            <li>
-                                <a href="{{ route('doctors.index') }}"
-                                   class="text-blue-300 hover:text-white text-sm transition">
-                                    👨‍⚕️ {{ __('messages.doctors') }}
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.dashboard') }}"
-                                   class="text-blue-300 hover:text-white text-sm transition">
-                                    ⚙️ {{ __('messages.admin_panel') }}
-                                </a>
-                            </li>
-                        @endif
-                    @else
-                        <li>
-                            <a href="{{ route('login') }}"
-                               class="text-blue-300 hover:text-white text-sm transition">
-                                🔐 {{ __('messages.login') }}
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('register') }}"
-                               class="text-blue-300 hover:text-white text-sm transition">
-                                ✨ {{ __('messages.register') }}
-                            </a>
-                        </li>
-                    @endauth
-                </ul>
-            </div>
-
-            <!-- Contact -->
-            <div>
-                <h4 class="font-bold text-white mb-4 text-sm uppercase tracking-wider">
-                    {{ __('messages.contact') }}
-                </h4>
-                <ul class="space-y-3">
-                    <li class="text-blue-300 text-sm flex items-center gap-2">
-                         mmaryayub@gmail.com
-                    </li>
-                    <li class="text-blue-300 text-sm flex items-center gap-2">
-                        📞 +255 757 178 421
-                    </li>
-                    <li class="text-blue-300 text-sm flex items-center gap-2">
-                        📍 Dodoma , Tanzania
-                    </li>
-                    <li class="text-blue-300 text-sm flex items-center gap-2">
-                        🕐 {{ app()->getLocale() === 'sw' ? 'Jumatatu - Jumamosi: 9AM - 6PM' : 'Mon - Sat: 9AM - 6PM' }}
-                    </li>
-                </ul>
+        {{-- Brand --}}
+        <div>
+            <h3 class="text-xl font-bold mb-2">MedicBook</h3>
+            <p class="text-white/80 text-sm mb-4">{{ __('messages.trusted_platform') }}</p>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-white/70">{{ app()->getLocale() === 'sw' ? 'Lugha:' : 'Language:' }}</span>
+                <a href="{{ url('lang/en') }}" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded">🇬🇧 English</a>
+                <a href="{{ url('lang/sw') }}" class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded">🇹🇿 Kiswahili</a>
             </div>
         </div>
 
-        <!-- Bottom Bar -->
-        <div class="border-t border-blue-700 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-blue-300 text-sm">
-                &copy; {{ date('Y') }} MedicBook. {{ __('messages.all_rights') }}
-            </p>
-            <div class="flex gap-6">
-                <a href="#" class="text-blue-300 hover:text-white text-sm transition">
-                    {{ app()->getLocale() === 'sw' ? 'Sera ya Faragha' : 'Privacy Policy' }}
-                </a>
-                <a href="#" class="text-blue-300 hover:text-white text-sm transition">
-                    {{ app()->getLocale() === 'sw' ? 'Masharti ya Huduma' : 'Terms of Service' }}
-                </a>
-                <a href="#" class="text-blue-300 hover:text-white text-sm transition">
-                    {{ app()->getLocale() === 'sw' ? 'Wasiliana Nasi' : 'Contact Us' }}
-                </a>
+        {{-- Quick Links --}}
+        <div>
+            <h4 class="font-semibold mb-3">{{ __('messages.quick_links') }}</h4>
+            <ul class="space-y-2 text-sm text-white/80">
+                <li><a href="{{ route('home') }}" class="hover:text-white">{{ __('messages.home') }}</a></li>
+                @auth
+                    @if(auth()->user()->isPatient())
+                        <li><a href="{{ route('patient.dashboard') }}" class="hover:text-white">{{ __('messages.dashboard') }}</a></li>
+                    @endif
+                    @if(auth()->user()->isAdmin())
+                        <li><a href="{{ route('doctors.index') }}" class="hover:text-white">{{ __('messages.doctors') }}</a></li>
+                        <li><a href="{{ route('admin.dashboard') }}" class="hover:text-white">{{ __('messages.admin_panel') }}</a></li>
+                    @endif
+                @else
+                    <li><a href="{{ route('login') }}" class="hover:text-white">{{ __('messages.login') }}</a></li>
+                    <li><a href="{{ route('register') }}" class="hover:text-white">{{ __('messages.register') }}</a></li>
+                @endauth
+            </ul>
+        </div>
+
+        {{-- Contact --}}
+        <div>
+            <h4 class="font-semibold mb-3">{{ __('messages.contact') }}</h4>
+            <ul class="space-y-2 text-sm text-white/80">
+                <li>📧 support@medicbook.com</li>
+                <li>📞 +255 712 345 678</li>
+                <li>📍 Dar es Salaam, Tanzania</li>
+                <li>🕐 {{ app()->getLocale() === 'sw' ? 'Jumatatu - Jumamosi: 9AM - 6PM' : 'Mon - Sat: 9AM - 6PM' }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="border-t border-white/20">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-white/70">
+            <p>© {{ date('Y') }} MedicBook. {{ __('messages.all_rights') }}</p>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:text-white">{{ app()->getLocale() === 'sw' ? 'Sera ya Faragha' : 'Privacy Policy' }}</a>
+                <a href="#" class="hover:text-white">{{ app()->getLocale() === 'sw' ? 'Masharti ya Huduma' : 'Terms of Service' }}</a>
+                <a href="#" class="hover:text-white">{{ app()->getLocale() === 'sw' ? 'Wasiliana Nasi' : 'Contact Us' }}</a>
             </div>
         </div>
     </div>
